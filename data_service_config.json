@@ -1,0 +1,128 @@
+{
+  "market_data_service": {
+    "comment": "=== Servicio de Datos de Mercado (Anti-Bot) ===",
+    
+    "enabled": true,
+    "mode": "passive",
+    
+    "interception": {
+      "enabled": true,
+      "method": "route_handler",
+      "comment": "Usa CDP protocol - invisible al broker",
+      
+      "targets": [
+        "candles",
+        "ohlc",
+        "bars",
+        "quotes",
+        "prices",
+        "payouts",
+        "rates"
+      ],
+      
+      "cache_ttl_seconds": 60,
+      "comment_cache": "Tiempo de vida del cache. Con 60s, refresh automático"
+    },
+    
+    "websocket": {
+      "enabled": true,
+      "listen_only": true,
+      "comment": "IMPORTANTE: solo listen, nunca send()",
+      
+      "events_to_capture": [
+        "ohlc",
+        "quotes",
+        "candles",
+        "tick",
+        "price",
+        "option-opened",
+        "asset-updated"
+      ]
+    },
+    
+    "fallback": {
+      "enabled": true,
+      "strategy": "cascade",
+      "comment": "Si interceptor falla, intenta APIs externas",
+      
+      "external_apis": [
+        {
+          "name": "polygon",
+          "enabled": false,
+          "comment": "Requiere API key (requiere pago)",
+          "api_key": "YOUR_POLYGON_KEY",
+          "base_url": "https://api.polygon.io",
+          "timeout": 5
+        },
+        {
+          "name": "finnhub",
+          "enabled": false,
+          "comment": "Requiere API key (gratuito con límites)",
+          "api_key": "YOUR_FINNHUB_KEY",
+          "base_url": "https://finnhub.io/api/v1",
+          "timeout": 5
+        },
+        {
+          "name": "alpha_vantage",
+          "enabled": false,
+          "comment": "Requiere API key (gratuito con límites)",
+          "api_key": "YOUR_ALPHA_VANTAGE_KEY",
+          "base_url": "https://www.alphavantage.co",
+          "timeout": 5
+        }
+      ]
+    },
+    
+    "caching": {
+      "enabled": true,
+      "backend": "memory",
+      "comment": "En el futuro: add SQLite para persistencia",
+      
+      "storage": {
+        "type": "memory",
+        "max_assets": 50,
+        "comment": "Mantiene en cache máx 50 activos simultáneamente"
+      },
+      
+      "cleaning": {
+        "enabled": true,
+        "interval_seconds": 300,
+        "comment": "Limpia cache cada 5 minutos"
+      }
+    },
+    
+    "monitoring": {
+      "enabled": true,
+      "log_level": "INFO",
+      "comment": "INFO, DEBUG, WARNING, ERROR",
+      
+      "metrics": {
+        "track_intercepted_requests": true,
+        "track_cache_hits": true,
+        "track_api_fallbacks": true
+      }
+    },
+    
+    "anti_detection": {
+      "enabled": true,
+      "comment": "=== Anti-Bot Detection Settings ===",
+      
+      "randomization": {
+        "enabled": false,
+        "comment": "En el futuro: agregar delays aleatorios"
+      },
+      
+      "behavior_mimicking": {
+        "enabled": false,
+        "comment": "En el futuro: simular comportamiento humano"
+      }
+    },
+    
+    "debug": {
+      "verbose": false,
+      "log_network_requests": false,
+      "log_websocket_frames": false,
+      "comment": "Activar solo para troubleshooting"
+    }
+  }
+}

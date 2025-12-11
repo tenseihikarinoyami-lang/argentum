@@ -1,0 +1,71 @@
+groups:
+  - name: trading_bot_alerts
+    interval: 30s
+    rules:
+      # Alert if bot is down
+      - alert: TradingBotDown
+        expr: up{job="trading-bot"} == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Trading Bot is down"
+          description: "Trading bot at {{ $labels.instance }} has been down for more than 5 minutes"
+
+      # Alert for high memory usage
+      - alert: HighMemoryUsage
+        expr: (process_resident_memory_bytes{job="trading-bot"} / 1024 / 1024 / 1024) > 2
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage detected"
+          description: "Trading bot memory usage is above 2GB"
+
+      # Alert for high CPU usage
+      - alert: HighCPUUsage
+        expr: rate(process_cpu_seconds_total{job="trading-bot"}[5m]) > 0.8
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected"
+          description: "Trading bot CPU usage is high ({{ $value | humanize }})"
+
+      # Alert for database connection issues
+      - alert: DatabaseConnectionError
+        expr: increase(database_connection_errors_total[5m]) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "Database connection errors detected"
+          description: "{{ $value }} database connection errors in the last 5 minutes"
+
+      # Alert for signal generation failures
+      - alert: SignalGenerationFailure
+        expr: increase(signal_generation_errors_total[10m]) > 5
+        labels:
+          severity: critical
+        annotations:
+          summary: "Signal generation failures"
+          description: "{{ $value }} signal generation errors in the last 10 minutes"
+
+      # Alert for high API response time
+      - alert: HighAPIResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High API response time"
+          description: "95th percentile response time is {{ $value | humanize }}s"
+
+      # Alert for too many failed requests
+      - alert: HighHTTPErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High HTTP error rate"
+          description: "More than 5% of requests are failing"

@@ -1,0 +1,85 @@
+{
+  "tests_passed": 15,
+  "tests_failed": 0,
+  "tests_total": 15,
+  "start_time": "2025-12-04T00:11:42.429602",
+  "results": [
+    {
+      "test": "Import position_sizer",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "test": "Import account_risk_manager",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "test": "Create PositionSizer instance",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "test": "Kelly Criterion calculation",
+      "passed": true,
+      "details": "kelly=0.4608 (46.08%)"
+    },
+    {
+      "test": "Position sizing calculation",
+      "passed": true,
+      "details": "size=$250.00 (2.50%)"
+    },
+    {
+      "test": "Create AccountRiskManager instance",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "test": "Trade recording",
+      "passed": true,
+      "details": "balance=$10150.00"
+    },
+    {
+      "test": "Risk analysis",
+      "passed": true,
+      "details": "health=100.0%"
+    },
+    {
+      "test": "Import SignalGenerator",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "test": "SignalGenerator position sizer integration",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "test": "SignalGenerator param update",
+      "passed": true,
+      "details": "win_rate=0.65, payout=1.85"
+    },
+    {
+      "test": "Import TradingBot from main",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "test": "TradingBot risk manager setup",
+      "passed": true,
+      "details": "config validated"
+    },
+    {
+      "test": "Logger setup and functionality",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "test": "Trade size validation",
+      "passed": true,
+      "details": "message: \u274c Tama\u00f1o propuesto muy peque\u00f1o (< 50% recomendado)..."
+    }
+  ],
+  "status": "SUCCESS",
+  "end_time": "2025-12-04T00:11:55.942625"
+}

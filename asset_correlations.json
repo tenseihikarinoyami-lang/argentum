@@ -1,0 +1,11 @@
+{
+    "USD": ["EUR/USD", "GBP/USD", "USD/JPY", "USD/CAD", "AUD/USD", "USD/CHF"],
+    "EUR": ["EUR/USD", "EUR/JPY", "EUR/GBP", "EUR/AUD", "EUR/CAD", "EUR/CHF"],
+    "JPY": ["USD/JPY", "EUR/JPY", "GBP/JPY", "AUD/JPY", "CAD/JPY", "CHF/JPY"],
+    "GBP": ["GBP/USD", "EUR/GBP", "GBP/JPY", "GBP/AUD", "GBP/CAD", "GBP/CHF"],
+    "AUD": ["AUD/USD", "EUR/AUD", "GBP/AUD", "AUD/JPY", "AUD/CAD", "AUD/CHF"],
+    "CAD": ["USD/CAD", "EUR/CAD", "GBP/CAD", "AUD/CAD", "CAD/JPY"],
+    "CHF": ["USD/CHF", "EUR/CHF", "GBP/CHF", "AUD/CHF", "CAD/CHF"],
+    "NZD": ["NZD/USD (OTC)", "EUR/NZD (OTC)", "GBP/NZD (OTC)", "AUD/NZD (OTC)", "NZD/CAD (OTC)", "NZD/JPY (OTC)", "NZD/CHF (OTC)"],
+    "CRYPTO": ["Bitcoin (OTC)", "Ethereum (OTC)", "Solana (OTC)", "Ripple (OTC)"]
+}

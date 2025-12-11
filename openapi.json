@@ -1,0 +1,482 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Trading Bot API",
+    "version": "1.0.0",
+    "description": "Enterprise-grade trading signal generation and analysis API",
+    "contact": {
+      "name": "Trading Bot Team",
+      "email": "support@tradingbot.local"
+    },
+    "license": {
+      "name": "MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000",
+      "description": "Development server"
+    },
+    {
+      "url": "https://api.tradingbot.local",
+      "description": "Production server"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Trading Bot Dashboard",
+        "tags": ["Dashboard"],
+        "description": "Returns the main dashboard HTML page",
+        "operationId": "get_dashboard",
+        "responses": {
+          "200": {
+            "description": "Dashboard HTML page",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "tags": ["Monitoring"],
+        "description": "Check if the API is healthy and all services are operational",
+        "operationId": "health_check",
+        "responses": {
+          "200": {
+            "description": "API is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthStatus"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "API is unavailable"
+          }
+        }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "summary": "Prometheus Metrics",
+        "tags": ["Monitoring"],
+        "description": "Prometheus-format metrics for monitoring",
+        "operationId": "get_metrics",
+        "responses": {
+          "200": {
+            "description": "Prometheus metrics",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/signals": {
+      "get": {
+        "summary": "Get All Trading Signals",
+        "tags": ["Signals"],
+        "description": "Retrieve all generated trading signals with optional filtering",
+        "operationId": "get_signals",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "description": "Maximum number of signals to return"
+          },
+          {
+            "name": "signal_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["BUY", "SELL", "HOLD"]
+            },
+            "description": "Filter by signal type"
+          },
+          {
+            "name": "asset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by asset symbol"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of trading signals",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TradingSignal"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters"
+          }
+        }
+      }
+    },
+    "/signals/{signal_id}": {
+      "get": {
+        "summary": "Get Signal Details",
+        "tags": ["Signals"],
+        "operationId": "get_signal",
+        "parameters": [
+          {
+            "name": "signal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Signal ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Signal details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TradingSignal"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Signal not found"
+          }
+        }
+      }
+    },
+    "/signals/analyze": {
+      "post": {
+        "summary": "Analyze Asset for Signals",
+        "tags": ["Signals"],
+        "description": "Generate trading signals for a specific asset",
+        "operationId": "analyze_asset",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalysisRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Analysis results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          }
+        }
+      }
+    },
+    "/indicators": {
+      "get": {
+        "summary": "Get Technical Indicators",
+        "tags": ["Indicators"],
+        "operationId": "get_indicators",
+        "parameters": [
+          {
+            "name": "asset",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Asset symbol"
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["1d", "1w", "1m"],
+              "default": "1d"
+            },
+            "description": "Time period"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Technical indicators",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Indicators"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/config": {
+      "get": {
+        "summary": "Get Configuration",
+        "tags": ["Configuration"],
+        "operationId": "get_config",
+        "responses": {
+          "200": {
+            "description": "Current configuration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Config"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Update Configuration",
+        "tags": ["Configuration"],
+        "operationId": "update_config",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Config"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Configuration updated"
+          },
+          "400": {
+            "description": "Invalid configuration"
+          }
+        }
+      }
+    },
+    "/statistics": {
+      "get": {
+        "summary": "Get Statistics",
+        "tags": ["Analytics"],
+        "description": "Get system statistics and performance metrics",
+        "operationId": "get_statistics",
+        "responses": {
+          "200": {
+            "description": "System statistics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Statistics"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HealthStatus": {
+        "type": "object",
+        "required": ["status", "timestamp"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["healthy", "degraded", "unhealthy"]
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "version": {
+            "type": "string"
+          },
+          "services": {
+            "type": "object",
+            "properties": {
+              "database": {
+                "type": "string",
+                "enum": ["operational", "degraded", "offline"]
+              },
+              "cache": {
+                "type": "string",
+                "enum": ["operational", "degraded", "offline"]
+              },
+              "message_queue": {
+                "type": "string",
+                "enum": ["operational", "degraded", "offline"]
+              }
+            }
+          }
+        }
+      },
+      "TradingSignal": {
+        "type": "object",
+        "required": ["id", "asset", "signal_type", "confidence", "timestamp"],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "asset": {
+            "type": "string"
+          },
+          "signal_type": {
+            "type": "string",
+            "enum": ["BUY", "SELL", "HOLD"]
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "indicators": {
+            "type": "object"
+          },
+          "recommendation": {
+            "type": "string"
+          }
+        }
+      },
+      "AnalysisRequest": {
+        "type": "object",
+        "required": ["asset"],
+        "properties": {
+          "asset": {
+            "type": "string"
+          },
+          "period": {
+            "type": "string",
+            "enum": ["1d", "1w", "1m"],
+            "default": "1d"
+          },
+          "indicators": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "AnalysisResult": {
+        "type": "object",
+        "properties": {
+          "asset": {
+            "type": "string"
+          },
+          "signal": {
+            "$ref": "#/components/schemas/TradingSignal"
+          },
+          "indicators": {
+            "$ref": "#/components/schemas/Indicators"
+          },
+          "analysis_time_ms": {
+            "type": "number"
+          }
+        }
+      },
+      "Indicators": {
+        "type": "object",
+        "properties": {
+          "rsi": {
+            "type": "number"
+          },
+          "macd": {
+            "type": "object"
+          },
+          "bollinger_bands": {
+            "type": "object"
+          },
+          "moving_averages": {
+            "type": "object"
+          }
+        }
+      },
+      "Config": {
+        "type": "object",
+        "properties": {
+          "trading_enabled": {
+            "type": "boolean"
+          },
+          "risk_level": {
+            "type": "string",
+            "enum": ["low", "medium", "high"]
+          },
+          "max_position_size": {
+            "type": "number"
+          },
+          "update_interval": {
+            "type": "integer"
+          }
+        }
+      },
+      "Statistics": {
+        "type": "object",
+        "properties": {
+          "total_signals": {
+            "type": "integer"
+          },
+          "signals_today": {
+            "type": "integer"
+          },
+          "buy_signals": {
+            "type": "integer"
+          },
+          "sell_signals": {
+            "type": "integer"
+          },
+          "accuracy": {
+            "type": "number"
+          },
+          "system_uptime_hours": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  }
+}

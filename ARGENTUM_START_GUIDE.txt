@@ -1,0 +1,272 @@
+===============================================================================
+ARGENTUM - Professional Automated Trading Bot
+Single Entry Point Startup Guide
+===============================================================================
+
+NOMBRE: ARGENTUM
+- Automated Reasoned Global Enterprise for Negotiation & Trading Utility Maximization
+- Sistema de trading automatizado profesional con LSTM Deep Learning y RL
+
+===============================================================================
+INICIO RÁPIDO
+===============================================================================
+
+OPCIÓN 1: Ejecución Directa (Python)
+-------------------------------------
+1. Asegúrate de tener Python 3.11+ instalado
+2. Instala dependencias:
+   pip install -r requirements.txt
+
+3. Ejecuta el bot:
+   python run_argentum.py
+
+4. Accede al dashboard:
+   http://localhost:5000
+
+Opciones de línea de comandos:
+   python run_argentum.py --help              # Mostrar ayuda
+   python run_argentum.py --config mybot.json # Usar config personalizada
+   python run_argentum.py --check-only        # Solo verificar configuración
+   python run_argentum.py --version           # Ver versión
+
+
+OPCIÓN 2: Ejecución con Docker (Recomendado)
+----------------------------------------------
+1. Asegúrate de tener Docker instalado
+
+2. Compilar imagen Docker:
+   docker build -t argentum:latest .
+
+3. Ejecutar contenedor:
+   docker run -p 5000:5000 -v $(pwd)/bot_models:/app/bot_models argentum:latest
+
+O usar Docker Compose (Recomendado):
+   docker-compose up -d
+
+4. Ver logs:
+   docker-compose logs -f argentum
+
+5. Accede al dashboard:
+   http://localhost:5000
+
+
+OPCIÓN 3: Ejecución Remota con Docker
+--------------------------------------
+1. Cambiar HOST en docker-compose.yml o config.json a 0.0.0.0
+
+2. Ejecutar:
+   docker-compose up -d
+
+3. Accede desde cualquier máquina:
+   http://<IP_del_servidor>:5000
+
+
+===============================================================================
+CONFIGURACIÓN
+===============================================================================
+
+1. Editar config.json:
+   {
+     "bot_name": "ARGENTUM",
+     "web_server": {
+       "host": "127.0.0.1",
+       "port": 5000
+     },
+     "operation_modes": {
+       "default_mode": "MONITOR",
+       "hybrid_confidence_threshold": 0.70
+     },
+     "risk_management": {
+       "total_capital": 10000,
+       "max_risk_per_trade": 0.02
+     }
+   }
+
+2. Variables de entorno (.env):
+   - BOT_NAME=ARGENTUM
+   - WEB_PORT=5000
+   - LSTM_ENABLED=true
+   - RL_ENABLED=true
+
+
+===============================================================================
+MODOS DE OPERACIÓN
+===============================================================================
+
+MONITOR
+-------
+- Observa señales sin ejecutar trades
+- Útil para validación y entrenamiento
+- Comando: python run_argentum.py --config monitor.json
+
+SEMI_AUTO
+---------
+- Genera señales, requiere confirmación manual
+- Control total del usuario sobre cada trade
+- Interfaz: UI presenta cada señal para aprobación
+
+AUTO
+----
+- Ejecuta trades automáticamente
+- Con límites de riesgo configurables
+- Interfaz: Monitoreo en tiempo real
+
+HYBRID
+------
+- Modo adaptativo
+- Ejecuta automáticamente si confidence >= threshold
+- Requiere confirmación si confidence < threshold
+- Umbral configurable: 0.70 (70% por defecto)
+
+
+===============================================================================
+COMPONENTES PRINCIPALES
+===============================================================================
+
+LSTM Deep Learning
+------------------
+✓ Predicción de precios mediante redes recurrentes
+✓ Análisis de patrones complejos en series temporales
+✓ Retroalimentación automática con datos de trades reales
+✓ Reentrenamiento periódico
+
+Reinforcement Learning (RL)
+----------------------------
+✓ Policy Gradient con Actor-Critic architecture
+✓ PPO (Proximal Policy Optimization) clipping
+✓ Aprendizaje adaptativo de política de trading
+✓ Optimización de retornos esperados
+
+State Persistence
+-----------------
+✓ Guardado automático de estado del bot
+✓ Recuperación ante crashes
+✓ Checkpoints versionados
+✓ Continuidad operativa sin pérdida de datos
+
+Operation Modes
+---------------
+✓ 4 modos operativos (MONITOR, SEMI_AUTO, AUTO, HYBRID)
+✓ Cambio dinámico de modo desde interfaz web
+✓ Control granular de cada modo
+✓ Lógica de confianza adaptativa
+
+Web Interface
+-------------
+✓ Dashboard profesional y moderno
+✓ Interfaz ARGENTUM con tema oscuro
+✓ Monitoreo en tiempo real
+✓ Cambio dinámico de modos
+✓ Estadísticas detalladas
+
+
+===============================================================================
+ARCHIVOS CLAVE
+===============================================================================
+
+run_argentum.py              - Punto único de entrada (INICIAR AQUÍ)
+config.json                  - Configuración del bot
+Dockerfile                   - Para ejecución en contenedor
+docker-compose.yml          - Orquestación completa
+requirements.txt            - Dependencias Python
+.env.example                - Variables de entorno de ejemplo
+
+bot_models/                 - Modelos LSTM y RL guardados
+logs/                        - Archivos de registro
+data/                        - Datos del bot
+
+
+===============================================================================
+VERIFICACIÓN DE INTEGRACIÓN
+===============================================================================
+
+Ejecutar verificación de integración:
+   python quick_integration_check.py
+
+Debe mostrar:
+   [PASS] operation_modes module
+   [PASS] phase1_integration module
+   [PASS] deep_learning_lstm module
+   [PASS] reinforcement_learning_agent module
+   [PASS] state_persistence module
+   [PASS] trade_executor module
+
+   [PASS] APROBADOS: 6/6
+   [PASS] TODO ESTA INTEGRADO CORRECTAMENTE!
+
+
+===============================================================================
+TROUBLESHOOTING
+===============================================================================
+
+Puerto 5000 en uso:
+   - Cambiar en config.json: "port": 5001
+   - O matar proceso: lsof -ti:5000 | xargs kill -9
+
+Error de TensorFlow:
+   pip install --upgrade tensorflow
+
+Error de dependencias:
+   pip install -r requirements.txt --upgrade
+
+Logs no disponibles:
+   Crear directorio: mkdir -p logs
+
+Estado anterior corrupto:
+   Eliminar: rm bot_state.json
+
+
+===============================================================================
+SEGURIDAD EN PRODUCCIÓN
+===============================================================================
+
+1. Cambiar WEB_HOST a 0.0.0.0 solo en entornos protegidos
+2. Usar reverse proxy (nginx) en producción
+3. Activar HTTPS/SSL
+4. Limitar acceso por IP/firewall
+5. Usar credenciales fuertes
+6. Monitorear logs regularmente
+7. Hacer backup de bot_models/ regularmente
+
+
+===============================================================================
+PERFORMANCE & OPTIMIZACIÓN
+===============================================================================
+
+Para mejor rendimiento:
+- Aumentar LSTM_RETRAIN_INTERVAL (menos reentrenamiento)
+- Reducir tamaño de ventana LSTM (lookback_window)
+- Usar GPU si está disponible (TensorFlow lo detecta automáticamente)
+- Monitorear uso de memoria: docker stats
+
+
+===============================================================================
+SOPORTE & DOCUMENTACIÓN
+===============================================================================
+
+Verifica los archivos de log:
+   tail -f logs/argentum.log
+
+Ver métricas Prometheus:
+   http://localhost:5000/metrics
+
+API Endpoints disponibles:
+   /api/status              - Estado actual
+   /api/mode                - Cambiar modo
+   /api/analyze             - Analizar activo
+
+
+===============================================================================
+¡ARGENTUM LISTO PARA OPERAR!
+===============================================================================
+
+Comando para iniciar:
+   python run_argentum.py
+
+O con Docker:
+   docker-compose up -d
+
+Dashboard en:
+   http://localhost:5000
+
+¡Buenas operaciones!

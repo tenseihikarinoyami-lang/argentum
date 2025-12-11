@@ -1,0 +1,255 @@
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                                                                               ║
+║                      CAMBIOS EXACTOS DE CÓDIGO REALIZADOS                    ║
+║                                                                               ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+
+FILE 1: signal_async_processor.py
+═════════════════════════════════════════════════════════════════════════════════
+
+[CAMBIO 1] - Línea 36: Actualizar docstring
+════════════════════════════════════════════════════════════════════════════════
+ANTES:
+    - Performance tracking
+
+DESPUÉS:
+    - Performance tracking
+    - 🎯 ANTI-DUPLICATE: Prevents duplicate signals for same asset
+
+
+[CAMBIO 2] - Líneas 59-60: NUEVAS variables de deduplicación
+════════════════════════════════════════════════════════════════════════════════
+AGREGADO:
+    # 🎯 ANTI-DUPLICATE: Track queued signals per asset
+    self.queued_assets: Dict[str, Dict[str, Any]] = {}  # asset -> signal being processed
+    self.processing_lock: threading.Lock = threading.Lock()
+
+
+[CAMBIO 3] - Línea 79-80: Documentación mejorada en queue_signal
+════════════════════════════════════════════════════════════════════════════════
+ANTES:
+    """
+    Queue a signal for processing.
+    
+    Args:
+        signal_data: Signal data dictionary
+        priority: Priority level
+    
+    Returns:
+        True if queued successfully, False if queue full
+    """
+
+DESPUÉS:
+    """
+    Queue a signal for processing.
+    
+    🎯 ANTI-DUPLICATE: Only queue if no signal for this asset is already queued.
+    
+    Args:
+        signal_data: Signal data dictionary
+        priority: Priority level
+    
+    Returns:
+        True if queued successfully, False if queue full or duplicate
+    """
+
+
+[CAMBIO 4] - Líneas 89-105: NUEVA LÓGICA anti-duplicados en queue_signal()
+════════════════════════════════════════════════════════════════════════════════
+AGREGADO AL INICIO:
+    asset = signal_data.get('asset')
+    
+    # 🎯 ANTI-DUPLICATE: Check if signal already queued for this asset
+    with self.processing_lock:
+        if asset in self.queued_assets:
+            logger.warning(f"[ASYNC] ⚠️ DUPLICATE REJECTED: {asset} already has a queued signal. Ignoring this one.")
+            self.failed_count += 1
+            return False
+        
+        # Mark this asset as having a queued signal
+        self.queued_assets[asset] = signal_data
+
+
+[CAMBIO 5] - Líneas 106-113: Manejar error de Queue Full
+════════════════════════════════════════════════════════════════════════════════
+AGREGADO EN EXCEPCIÓN queue.Full:
+    logger.warning(f"[ASYNC] Queue full, rejecting signal for {asset}")
+    # Remove from queued_assets since we failed to queue
+    with self.processing_lock:
+        if asset in self.queued_assets:
+            del self.queued_assets[asset]
+
+
+[CAMBIO 6] - Líneas 178-189: NUEVA LIMPIEZA en _process_batch
+════════════════════════════════════════════════════════════════════════════════
+AGREGADO DESPUÉS DE PROCESAR:
+    # 🎯 ANTI-DUPLICATE: Remove from queued_assets after processing
+    with self.processing_lock:
+        if asset in self.queued_assets:
+            del self.queued_assets[asset]
+
+AGREGADO EN EXCEPCIÓN:
+    # 🎯 ANTI-DUPLICATE: Clean up on error
+    asset = signal_data.get('asset')
+    with self.processing_lock:
+        if asset in self.queued_assets:
+            del self.queued_assets[asset]
+
+
+[CAMBIO 7] - Línea 229: NUEVA MÉTRICA en get_stats
+════════════════════════════════════════════════════════════════════════════════
+AGREGADO:
+    # 🎯 ANTI-DUPLICATE: Include deduplication stats
+    with self.processing_lock:
+        queued_count = len(self.queued_assets)
+    
+    return {
+        ...
+        'queued_assets': queued_count,  # 🎯 NEW: How many assets have signals being processed
+        ...
+    }
+
+
+FILE 2: real_time_monitor.py
+═════════════════════════════════════════════════════════════════════════════════
+
+[CAMBIO 1] - Línea 65: CAMBIO CRÍTICO - Tiempo por activo
+════════════════════════════════════════════════════════════════════════════════
+ANTES:
+    self.time_per_asset = 8.0  # 8 seconds per asset
+
+DESPUÉS:
+    self.time_per_asset = 60.0  # 🎯 FIXED: 60 seconds per asset (was 8s, now focused monitoring)
+
+
+[CAMBIO 2] - Línea 67: NUEVO intervalo de análisis
+════════════════════════════════════════════════════════════════════════════════
+AGREGADO:
+    self.analysis_interval = 3.0  # 🎯 NEW: Analyze every 3 seconds during the 60s window
+
+
+[CAMBIO 3] - Línea 214: NUEVO MÉTODO - _focused_monitoring_phase()
+════════════════════════════════════════════════════════════════════════════════
+AGREGADO COMPLETO NUEVO MÉTODO (líneas 311-352):
+
+def _focused_monitoring_phase(self, asset: str, cycle_count: int) -> None:
+    """
+    🎯 NEW: Focused 60-second monitoring of a single asset.
+    
+    This method ensures:
+    1. Monitor stays on this asset for exactly 60 seconds
+    2. Multiple analyses happen within those 60 seconds
+    3. Other assets are IGNORED during this period
+    4. Only signals for THIS asset are generated
+    """
+    logger.info(f"[FOCUS] 🎯 Starting 60-second focused phase on {asset}")
+    
+    start_time = time.time()
+    analysis_count = 0
+    last_analysis_time = start_time
+    
+    while time.time() - start_time < self.time_per_asset and self.running:
+        try:
+            current_time = time.time()
+            elapsed = current_time - start_time
+            time_remaining = self.time_per_asset - elapsed
+            
+            # Perform analysis every 3 seconds during the 60-second window
+            if current_time - last_analysis_time >= self.analysis_interval:
+                analysis_count += 1
+                logger.info(f"[FOCUS] [{analysis_count}] Analyzing {asset} - {elapsed:.1f}s elapsed (⏱️  {time_remaining:.1f}s remaining)")
+                
+                self._analyze_asset(asset)
+                last_analysis_time = current_time
+            
+            # Small sleep to avoid CPU spinning
+            time.sleep(0.5)
+            
+        except Exception as e:
+            logger.error(f"[FOCUS] Error during focused monitoring of {asset}: {e}")
+            time.sleep(1)
+    
+    logger.info(f"[FOCUS] ✅ 60-second focused phase complete on {asset} ({analysis_count} analyses performed)")
+
+
+[CAMBIO 4] - Líneas 215-231: ACTUALIZAR lógica de ciclo en _monitor_loop()
+════════════════════════════════════════════════════════════════════════════════
+ANTES (sección "else"):
+    # Modo de rotación normal
+    logger.info(f"\n[CYCLE {cycle_count}] ➡️ Rotando a: {current_asset}")
+    logger.info(f"[CYCLE {cycle_count}] [1/4] Changing asset...")
+    change_success = self._change_to_asset(current_asset)
+    if not change_success:
+        logger.warning(f"[CYCLE {cycle_count}] ⚠️ Asset change failed, skipping")
+        asset_index += 1
+        continue
+    
+    logger.info(f"[CYCLE {cycle_count}] [2/4] Waiting for WebSocket data...")
+    self._wait_for_websocket_data(current_asset)
+    
+    logger.info(f"[CYCLE {cycle_count}] [3/4] Analyzing asset...")
+    self._analyze_asset(current_asset)
+    
+    logger.info(f"[CYCLE {cycle_count}] [4/4] ✅ Cycle complete")
+    asset_index += 1
+
+DESPUÉS:
+    # Modo de rotación normal - 🎯 FIXED: 60 second focused monitoring
+    logger.info(f"\n[CYCLE {cycle_count}] ➡️ Rotando a: {current_asset}")
+    logger.info(f"[CYCLE {cycle_count}] [1/3] Changing asset...")
+    change_success = self._change_to_asset(current_asset)
+    if not change_success:
+        logger.warning(f"[CYCLE {cycle_count}] ⚠️ Asset change failed, skipping")
+        asset_index += 1
+        continue
+    
+    logger.info(f"[CYCLE {cycle_count}] [2/3] Waiting for WebSocket data...")
+    self._wait_for_websocket_data(current_asset)
+    
+    logger.info(f"[CYCLE {cycle_count}] [3/3] ⏱️  Focused analysis phase (60 seconds)...")
+    # 🎯 FIXED: Focus on this asset for 60 seconds with periodic analysis
+    self._focused_monitoring_phase(current_asset, cycle_count)
+    
+    logger.info(f"[CYCLE {cycle_count}] ✅ Cycle complete - Moving to next asset in {self.time_per_asset}s")
+    asset_index += 1
+
+
+FILE 3: main.py
+═════════════════════════════════════════════════════════════════════════════════
+
+[CAMBIO 1] - Línea 467: MEJORAR log de estadísticas ASYNC
+════════════════════════════════════════════════════════════════════════════════
+ANTES:
+    logger.info(f"[ASYNC] Queue: {async_stats['queue_size']} | Processed: {async_stats['processed_signals']} | Avg Time: {async_stats['avg_processing_time']}")
+
+DESPUÉS:
+    logger.info(f"[ASYNC] Queue: {async_stats['queue_size']} | Queued Assets: {async_stats.get('queued_assets', 0)} | Processed: {async_stats['processed_signals']} | Avg Time: {async_stats['avg_processing_time']}")
+                                                                       ↑
+                                                    Nuevo contador de deduplicación
+
+
+═════════════════════════════════════════════════════════════════════════════════
+
+RESUMEN DE CAMBIOS
+═════════════════════════════════════════════════════════════════════════════════
+
+✅ CORRECCIÓN 1: Anti-duplicados
+   - Archivos modificados: 1 (signal_async_processor.py)
+   - Líneas agregadas: ~40
+   - Métodos modificados: 2 (queue_signal, _process_batch, get_stats)
+   - Nuevo diccionario: queued_assets
+
+✅ CORRECCIÓN 2: Rotación 60 segundos  
+   - Archivos modificados: 2 (real_time_monitor.py, main.py)
+   - Líneas agregadas: ~60
+   - Métodos nuevos: 1 (_focused_monitoring_phase)
+   - Métodos modificados: 1 (_monitor_loop)
+   - Variable clave: time_per_asset (8.0 → 60.0)
+
+═════════════════════════════════════════════════════════════════════════════════
+Status: ✅ CAMBIOS COMPLETADOS
+Total de archivos: 3
+Total de líneas modificadas/agregadas: ~100
+Complejidad: BAJA (cambios localizados y seguros)
+═════════════════════════════════════════════════════════════════════════════════

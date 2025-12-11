@@ -1,0 +1,22 @@
+{
+  "chrome": true,
+  "websocket": false,
+  "signals": false,
+  "performance": {
+    "cpu_percent": 64.8,
+    "memory_percent": 76.5,
+    "disk_percent": 90.3,
+    "timestamp": "2025-10-26T04:39:03.057671"
+  },
+  "errors": [
+    "WebSocket test failed: 'in <string>' requires string as left operand, not bool",
+    "Signal generation test failed: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()"
+  ],
+  "warnings": [
+    "Code check failed: Context re-registration",
+    "Code check failed: Page re-registration",
+    "High disk usage detected"
+  ],
+  "start_time": "2025-10-26T04:39:01.297164",
+  "end_time": "2025-10-26T04:39:03.058339"
+}

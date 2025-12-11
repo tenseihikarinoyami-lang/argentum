@@ -1,0 +1,51 @@
+{
+    "forex_major": [
+        "EUR/USD", "GBP/USD", "USD/JPY", "USD/CHF", "AUD/USD", "USD/CAD", "NZD/USD"
+    ],
+    "forex_minor": [
+        "EUR/GBP", "EUR/JPY", "EUR/AUD", "EUR/CAD", "EUR/CHF",
+        "GBP/JPY", "GBP/AUD", "GBP/CAD", "GBP/CHF",
+        "AUD/JPY", "AUD/CAD", "AUD/CHF",
+        "CAD/JPY", "CAD/CHF",
+        "CHF/JPY"
+    ],
+    "forex_otc": [
+        "EUR/USD-OTC", "GBP/USD-OTC", "USD/JPY-OTC", "AUD/USD-OTC", "EUR/GBP-OTC", "EUR/JPY-OTC", "GBP/JPY-OTC",
+        "USD/BRL (OTC)", "EUR/SGD (OTC)", "GBP/NZD (OTC)", "USD/EGP (OTC)", "USD/PHP (OTC)",
+        "USD/BDT (OTC)", "USD/PKR (OTC)", "USD/ARS (OTC)", "USD/COP (OTC)", "NZD/CAD (OTC)",
+        "CAD/CHF (OTC)", "NZD/JPY (OTC)", "USD/NGN (OTC)", "USD/TRY (OTC)", "NZD/CHF (OTC)",
+        "NZD/USD (OTC)", "USD/DZD (OTC)", "USD/MXN (OTC)", "USD/IDR (OTC)", "USD/INR (OTC)",
+        "EUR/NZD (OTC)", "AUD/NZD (OTC)", "USD/ZAR (OTC)"
+    ],
+    "crypto_real": [
+        "Bitcoin", "Ethereum", "Litecoin", "Ripple", "Bitcoin Cash",
+        "BTC/USD", "ETH/USD", "LTC/USD", "XRP/USD", "Crypto IDX"
+    ],
+    "crypto_otc": [
+        "Bitcoin (OTC)", "Ethereum (OTC)", "Litecoin (OTC)", "Ripple (OTC)", "Bitcoin Cash (OTC)",
+        "Cardano (OTC)", "Axie Infinity (OTC)", "Bonk (OTC)", "Dash (OTC)", "Decentraland (OTC)",
+        "Pepe (OTC)", "Shiba Inu (OTC)", "Solana (OTC)", "Celestia (OTC)", "Toncoin (OTC)",
+        "TRON (OTC)", "Dogwifhat (OTC)", "Zcash (OTC)", "Arbitrum (OTC)", "Beam (OTC)",
+        "Binance Coin (OTC)", "Cosmos (OTC)", "Polkadot (OTC)", "Gala (OTC)", "Floki (OTC)",
+        "Ethereum Classic (OTC)", "Chainlink (OTC)", "Notcoin (OTC)", "Avalanche (OTC)",
+        "Aptos (OTC)", "Dogecoin (OTC)"
+    ],
+    "commodities_real": [
+        "Gold", "Silver", "XAU/USD", "XAG/USD", "WTIOIL", "BrentOil"
+    ],
+    "commodities_otc": [
+        "UKBrent (OTC)", "Silver (OTC)", "USCrude (OTC)", "Gold (OTC)"
+    ],
+    "indices": [
+        "US-30", "US-100", "US-500", "DE-30", "UK-100", "JP-225",
+        "America IDX", "Asia IDX", "Europe IDX"
+    ],
+    "stocks_otc": [
+        "Boeing Company (OTC)", "Intel (OTC)", "McDonald's (OTC)", "Pfizer Inc (OTC)",
+        "American Express (OTC)", "FACEBOOK INC (OTC)", "Johnson & Johnson (OTC)", "Microsoft (OTC)"
+    ],
+    "indices_otc": [
+        "S&P/ASX 200", "Hong Kong 50", "IBEX 35", "Nikkei 225", "CAC 40",
+        "NASDAQ 100", "Dow Jones", "FTSE 100", "EURO STOXX 50", "FTSE China A50 Index"
+    ]
+}
